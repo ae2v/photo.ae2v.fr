@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { connection } from "next/server";
-import { CopyLinkButton } from "@/components/copy-link-button";
-import { getEventsState, type PublicEvent } from "@/lib/events";
+import { AlbumBrowser } from "@/components/album-browser";
+import { getEventsState } from "@/lib/events";
 
 export default async function Home() {
   await connection();
@@ -31,11 +31,7 @@ export default async function Home() {
         </div>
 
         {state.status === "ready" && state.events.length > 0 && (
-          <div className="event-list">
-            {state.events.map((event, index) => (
-              <EventRow key={event.driveFolderId} event={event} index={index + 1} siteUrl={siteUrl} />
-            ))}
-          </div>
+          <AlbumBrowser albums={state.events} siteUrl={siteUrl} />
         )}
 
         {state.status === "ready" && state.events.length === 0 && (
@@ -58,26 +54,6 @@ export default async function Home() {
         </a>
       </footer>
     </main>
-  );
-}
-
-function EventRow({ event, index, siteUrl }: { event: PublicEvent; index: number; siteUrl: string }) {
-  const shortUrl = `${siteUrl}/${event.shortCode}`;
-  return (
-    <article className="event-row">
-      <span className="event-index" aria-hidden="true">{String(index).padStart(2, "0")}</span>
-      <div className="event-main">
-        <div className="event-copy">
-          <p className="public-label"><span /> Album public</p>
-          <h3>{event.name}</h3>
-          <a className="short-link" href={`/${event.shortCode}`}>{shortUrl.replace(/^https?:\/\//, "")}</a>
-        </div>
-        <div className="event-actions">
-          <a className="button button-primary" href={`/${event.shortCode}`} target="_blank" rel="noreferrer">Voir l’album <ArrowIcon /></a>
-          <CopyLinkButton url={shortUrl} />
-        </div>
-      </div>
-    </article>
   );
 }
 

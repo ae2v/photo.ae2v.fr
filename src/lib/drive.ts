@@ -10,6 +10,7 @@ export type DriveFolder = {
   id: string;
   name: string;
   webViewLink: string;
+  createdTime?: string;
   modifiedTime?: string;
 };
 
@@ -54,7 +55,7 @@ export async function listPublishedFolders(): Promise<DriveFolder[]> {
   do {
     const params = new URLSearchParams({
       q: `'${config.folderId}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`,
-      fields: "nextPageToken,files(id,name,webViewLink,modifiedTime)",
+      fields: "nextPageToken,files(id,name,webViewLink,createdTime,modifiedTime)",
       pageSize: "1000",
       orderBy: "modifiedTime desc",
       supportsAllDrives: "true",
@@ -82,6 +83,7 @@ export async function listPublishedFolders(): Promise<DriveFolder[]> {
     id: file.id,
     name: file.name,
     webViewLink: file.webViewLink,
+    createdTime: file.createdTime,
     modifiedTime: file.modifiedTime,
   }));
 }

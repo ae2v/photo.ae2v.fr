@@ -13,6 +13,7 @@ export type PublicEvent = {
   name: string;
   shortCode: string;
   driveUrl: string;
+  createdTime?: string;
   modifiedTime?: string;
 };
 
@@ -51,11 +52,12 @@ async function loadEvents(): Promise<PublicEvent[]> {
     name: folder.name,
     shortCode: await ensureShortCode(folder.id),
     driveUrl: folder.webViewLink || `https://drive.google.com/drive/folders/${folder.id}`,
+    createdTime: folder.createdTime,
     modifiedTime: folder.modifiedTime,
   })));
 }
 
-const getCachedEvents = unstable_cache(loadEvents, ["ae2v-public-photo-events-v3"], {
+const getCachedEvents = unstable_cache(loadEvents, ["ae2v-public-photo-events-v4"], {
   revalidate: 600,
   tags: ["photo-events"],
 });
