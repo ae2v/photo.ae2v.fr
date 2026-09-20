@@ -4,6 +4,7 @@ import { GoogleAuth } from "google-auth-library";
 import { getGoogleConfig } from "./config";
 
 type DrivePermission = { type?: string; role?: string };
+type PermissionContainer = { permissions?: DrivePermission[] };
 
 export type DriveFolder = {
   id: string;
@@ -12,13 +13,24 @@ export type DriveFolder = {
   modifiedTime?: string;
 };
 
-type DriveFile = DriveFolder & { permissions?: DrivePermission[] };
 const publishedRoles = new Set(["reader", "commenter", "writer", "fileOrganizer", "organizer", "owner"]);
 
-function isPublished(file: DriveFile): boolean {
+function isPublished(file: PermissionContainer): boolean {
   return file.permissions?.some(
     (permission) => permission.type === "anyone" && publishedRoles.has(permission.role ?? ""),
   ) ?? false;
+}
+
+async function getPermissions(fileId: string, accessToken: string): Promise<PermissionContainer> {
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/permissions?fields=permissions(type,role)&supportsAllDrives=true`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    },
+  );
+  if (!response.ok) throw new Error(`Permissions Drive inaccessibles (${response.status})`);
+  return response.json() as Promise<PermissionContainer>;
 }
 
 export async function listPublishedFolders(): Promise<DriveFolder[]> {
@@ -33,26 +45,16 @@ export async function listPublishedFolders(): Promise<DriveFolder[]> {
   });
   const token = await (await auth.getClient()).getAccessToken();
   if (!token.token) throw new Error("Google n’a pas fourni de jeton d’accès");
+  const accessToken = token.token;
 
-  const rootResponse = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(config.folderId)}?fields=permissions(type,role)&supportsAllDrives=true`,
-    {
-      headers: { Authorization: `Bearer ${token.token}` },
-      cache: "no-store",
-    },
-  );
-  if (!rootResponse.ok) {
-    throw new Error(`Dossier Drive racine inaccessible (${rootResponse.status})`);
-  }
-  const root = (await rootResponse.json()) as Pick<DriveFile, "permissions">;
-  const rootIsPublished = isPublished(root as DriveFile);
+  const rootIsPublished = isPublished(await getPermissions(config.folderId, accessToken));
 
-  const files: DriveFile[] = [];
+  const files: DriveFolder[] = [];
   let pageToken: string | undefined;
   do {
     const params = new URLSearchParams({
       q: `'${config.folderId}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`,
-      fields: "nextPageToken,files(id,name,webViewLink,modifiedTime,permissions(type,role))",
+      fields: "nextPageToken,files(id,name,webViewLink,modifiedTime)",
       pageSize: "1000",
       orderBy: "modifiedTime desc",
       supportsAllDrives: "true",
@@ -60,16 +62,20 @@ export async function listPublishedFolders(): Promise<DriveFolder[]> {
     });
     if (pageToken) params.set("pageToken", pageToken);
     const response = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, {
-      headers: { Authorization: `Bearer ${token.token}` },
+      headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store",
     });
     if (!response.ok) throw new Error(`Google Drive a répondu ${response.status}: ${await response.text()}`);
-    const data = (await response.json()) as { files?: DriveFile[]; nextPageToken?: string };
+    const data = (await response.json()) as { files?: DriveFolder[]; nextPageToken?: string };
     files.push(...(data.files ?? []));
     pageToken = data.nextPageToken;
   } while (pageToken);
 
-  const publishedFiles = rootIsPublished ? files : files.filter(isPublished);
+  const publishedFiles = rootIsPublished
+    ? files
+    : (await Promise.all(files.map(async (file) => (
+        isPublished(await getPermissions(file.id, accessToken)) ? file : null
+      )))).filter((file): file is DriveFolder => file !== null);
   console.info(`Drive: ${files.length} sous-dossier(s) visible(s), ${publishedFiles.length} publié(s)`);
 
   return publishedFiles.map((file) => ({
