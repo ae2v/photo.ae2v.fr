@@ -10,14 +10,6 @@ export default async function Home() {
 
   return (
     <main>
-      <header className="site-header">
-        <a className="header-brand" href="https://ae2v.fr" aria-label="Retour au site AE2V">
-          <Image src="/emblem-ae2v-white.svg" alt="" width={36} height={36} priority />
-          <span>AE2V</span>
-        </a>
-        <span className="header-label"><i aria-hidden="true" /> Photothèque</span>
-      </header>
-
       <section className="hero">
         <div className="hero-mark" aria-hidden="true">ALBUMS</div>
         <div className="hero-content">
@@ -29,13 +21,6 @@ export default async function Home() {
           <p className="hero-intro">Tous les événements. Tous les souvenirs. Un lien.</p>
         </div>
       </section>
-
-      <div className="photo-ticker" aria-hidden="true">
-        <div>
-          <span>Événements</span><b>✦</b><span>Campus</span><b>✦</b><span>Souvenirs</span><b>✦</b><span>AE2V</span><b>✦</b>
-          <span>Événements</span><b>✦</b><span>Campus</span><b>✦</b><span>Souvenirs</span><b>✦</b><span>AE2V</span><b>✦</b>
-        </div>
-      </div>
 
       <section className="events-section" aria-labelledby="events-title">
         <div className="section-heading">
@@ -65,8 +50,12 @@ export default async function Home() {
       </section>
 
       <footer>
-        <Image src="/logo-ae2v.svg" alt="AE2V — Always further, together" width={154} height={46} />
-        <p>Albums hébergés sur Google Drive · Mise à jour toutes les 10 minutes</p>
+        <a href="https://ae2v.fr" aria-label="Accéder au site officiel de l’AE2V">
+          <Image src="/logo-ae2v.svg" alt="AE2V — Always further, together" width={154} height={46} />
+        </a>
+        <a className="official-site-link" href="https://ae2v.fr">
+          Site officiel AE2V <ArrowIcon />
+        </a>
       </footer>
     </main>
   );
