@@ -11,20 +11,31 @@ export default async function Home() {
   return (
     <main>
       <header className="site-header">
-        <a href="https://ae2v.fr" aria-label="Retour au site AE2V">
-          <Image src="/emblem-ae2v-white.svg" alt="" width={48} height={48} priority />
+        <a className="header-brand" href="https://ae2v.fr" aria-label="Retour au site AE2V">
+          <Image src="/emblem-ae2v-white.svg" alt="" width={36} height={36} priority />
+          <span>AE2V</span>
         </a>
-        <span>Photothèque</span>
+        <span className="header-label"><i aria-hidden="true" /> Photothèque</span>
       </header>
 
       <section className="hero">
-        <div className="hero-mark" aria-hidden="true">PHOTOS</div>
+        <div className="hero-mark" aria-hidden="true">ALBUMS</div>
         <div className="hero-content">
           <p className="hero-kicker">Les souvenirs du campus</p>
-          <h1>Photos<br />AE2V</h1>
-          <p className="hero-intro">Retrouve les albums des événements de l’association et partage-les en un lien.</p>
+          <h1 aria-label="Photos AE2V">
+            <span>Photos</span>
+            <span className="title-second">AE2V<i aria-hidden="true" /></span>
+          </h1>
+          <p className="hero-intro">Tous les événements. Tous les souvenirs. Un lien.</p>
         </div>
       </section>
+
+      <div className="photo-ticker" aria-hidden="true">
+        <div>
+          <span>Événements</span><b>✦</b><span>Campus</span><b>✦</b><span>Souvenirs</span><b>✦</b><span>AE2V</span><b>✦</b>
+          <span>Événements</span><b>✦</b><span>Campus</span><b>✦</b><span>Souvenirs</span><b>✦</b><span>AE2V</span><b>✦</b>
+        </div>
+      </div>
 
       <section className="events-section" aria-labelledby="events-title">
         <div className="section-heading">
