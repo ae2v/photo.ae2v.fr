@@ -1,7 +1,5 @@
-import { loadEnvConfig } from "@next/env";
 import { neon } from "@neondatabase/serverless";
 
-loadEnvConfig(process.cwd());
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL est absente de .env.local");
 
 const sql = neon(process.env.DATABASE_URL);
