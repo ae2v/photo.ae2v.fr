@@ -34,6 +34,19 @@ export async function listPublishedFolders(): Promise<DriveFolder[]> {
   const token = await (await auth.getClient()).getAccessToken();
   if (!token.token) throw new Error("Google n’a pas fourni de jeton d’accès");
 
+  const rootResponse = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(config.folderId)}?fields=permissions(type,role)&supportsAllDrives=true`,
+    {
+      headers: { Authorization: `Bearer ${token.token}` },
+      cache: "no-store",
+    },
+  );
+  if (!rootResponse.ok) {
+    throw new Error(`Dossier Drive racine inaccessible (${rootResponse.status})`);
+  }
+  const root = (await rootResponse.json()) as Pick<DriveFile, "permissions">;
+  const rootIsPublished = isPublished(root as DriveFile);
+
   const files: DriveFile[] = [];
   let pageToken: string | undefined;
   do {
@@ -56,7 +69,10 @@ export async function listPublishedFolders(): Promise<DriveFolder[]> {
     pageToken = data.nextPageToken;
   } while (pageToken);
 
-  return files.filter(isPublished).map((file) => ({
+  const publishedFiles = rootIsPublished ? files : files.filter(isPublished);
+  console.info(`Drive: ${files.length} sous-dossier(s) visible(s), ${publishedFiles.length} publié(s)`);
+
+  return publishedFiles.map((file) => ({
     id: file.id,
     name: file.name,
     webViewLink: file.webViewLink,

@@ -55,7 +55,7 @@ async function loadEvents(): Promise<PublicEvent[]> {
   })));
 }
 
-const getCachedEvents = unstable_cache(loadEvents, ["ae2v-public-photo-events"], {
+const getCachedEvents = unstable_cache(loadEvents, ["ae2v-public-photo-events-v2"], {
   revalidate: 600,
   tags: ["photo-events"],
 });

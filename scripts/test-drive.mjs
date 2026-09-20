@@ -1,7 +1,5 @@
-import { loadEnvConfig } from "@next/env";
 import { GoogleAuth } from "google-auth-library";
 
-loadEnvConfig(process.cwd());
 const required = ["GOOGLE_PROJECT_ID", "GOOGLE_CLIENT_EMAIL", "GOOGLE_PRIVATE_KEY", "GOOGLE_DRIVE_FOLDER_ID"];
 for (const name of required) {
   if (!process.env[name]) throw new Error(`${name} est absente de .env.local`);
