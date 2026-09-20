@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# photo.ae2v.fr
 
-## Getting Started
+Petit annuaire d’albums photo AE2V. L’application lit les sous-dossiers publics d’un dossier Google Drive, attribue à chacun un code court permanent et redirige ce code vers Drive.
 
-First, run the development server:
+## Architecture
+
+- Next.js 16 / App Router, déployé sur Vercel ;
+- Google Drive API avec compte de service en lecture seule ;
+- PostgreSQL serverless (Neon ou Vercel Postgres) pour `drive_folder_id → short_code` ;
+- cache de données Next.js/Vercel revalidé toutes les 600 secondes ;
+- aucun stockage local, processus persistant ou cache mémoire requis.
+
+## Installation
+
+Commencez par [le tutoriel Google Cloud](docs/CONFIGURATION_GOOGLE.md).
 
 ```bash
+cp .env.example .env.local
+npm install
+npm run db:migrate
+npm run test:drive
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Déploiement Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Ajoutez les variables de `.env.example` dans les paramètres Vercel, reliez une base PostgreSQL serverless, exécutez la migration puis redéployez. Le domaine `photo.ae2v.fr` pourra ensuite être ajouté dans **Settings → Domains**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Les identifiants Google et `DATABASE_URL` restent côté serveur. Tous les fichiers `.env*` sont ignorés par Git à l’exception du modèle vide `.env.example`.
